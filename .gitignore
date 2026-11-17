@@ -1,0 +1,5 @@
+*.cnf
+glucose-simp
+glucose-syrup
+__pycache__/
+.DS_Store
