@@ -1,5 +1,35 @@
 import sys
 from argparse import ArgumentParser
+from itertools import combinations
+
+def create_triples(n):
+    triples = list(combinations(range(1, n + 1), 3))
+    return triples, {t: i for i, t in enumerate(triples, 1)}
+
+def triples_with_pair(i, j, n, triple_to_id):
+    return [triple_to_id[tuple(sorted((i, j, k)))] for k in range(1, n + 1) if k not in (i, j)]
+
+def at_most_one_pairwise(ids):
+    return [[-a, -b, 0] for a, b in combinations(ids, 2)]
+
+
+def encode(n):
+    triples, triple_to_id = create_triples(n)
+    nr_vars = len(triples)
+    cnf = []
+
+    for i, j in combinations(range(1, n + 1), 2):
+        ids = triples_with_pair(i, j, n, triple_to_id)
+        cnf.append(ids + [0])
+        cnf.extend(at_most_one_pairwise(ids))
+
+    return cnf, nr_vars, triples
+
+def write_dimacs(cnf, nr_vars, output_name):
+    with open(output_name, "w") as file:
+        file.write("p cnf " + str(nr_vars) + " " + str(len(cnf)) + "\n")
+        for clause in cnf:
+            file.write(" ".join(str(lit) for lit in clause) + "\n")
 
 if __name__ == "__main__":
 
@@ -8,6 +38,8 @@ if __name__ == "__main__":
                         help="The instance file (contains the order n).")
     parser.add_argument("-n", "--order", type=int,
                         help="The order n given directly (then the input file is not read).")
+    parser.add_argument("-o", "--output", default="formula.cnf", type=str,
+                        help="Output file for the DIMACS format (i.e. the CNF formula).")
     args = parser.parse_args()
 
     # get the input instance
@@ -15,4 +47,6 @@ if __name__ == "__main__":
     n = args.order if args.order is not None else int(open(args.input).read().split()[0])
     if n < 1:
         sys.exit("The order n has to be a positive integer.")
-    print("order n = " + str(n))
+    cnf, nr_vars, triples = encode(n)
+    write_dimacs(cnf, nr_vars, args.output)
+    print("CNF formula with " + str(nr_vars) + " variables and " + str(len(cnf)) + " clauses written to " + args.output)
