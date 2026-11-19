@@ -12,3 +12,40 @@ make
 This creates the executables `glucose-simp` (the sequential solver) and `glucose-syrup` (the parallel one). The script uses `glucose-simp` and expects it in the same directory as the script, but another path can be given with `-s`. Everything was tested on macOS (it should also work on Linux; on Windows I recommend WSL). Only the Python standard library is used.
 
 The problem is already a decision problem: for a given number $n$, we ask whether a Steiner triple system of order $n$ exists. If it does, the script also prints one.
+
+# Documentation
+
+## Problem description
+
+We have $n$ points $V = \{1, 2, \ldots, n\}$. A *Steiner triple system* of order $n$ is a set $B$ of 3-element subsets of $V$ (called triples) such that **every pair of distinct points is contained in exactly one triple** of $B$.
+
+- Parameter: a positive integer $n$.
+- Question: does there exist a set $B \subseteq \binom{V}{3}$ such that for every pair $\{i, j\} \subseteq V$ with $i \neq j$ there is exactly one triple $t \in B$ with $\{i, j\} \subseteq t$?
+
+CSPLib states the problem a bit differently: find $n(n-1)/6$ triples such that any two triples have at most one point in common. This is the same thing. Two triples sharing two points would share a pair, so "at most one common point" means that no pair is covered twice. Then $n(n-1)/6$ triples cover $3 \cdot n(n-1)/6 = \binom{n}{2}$ different pairs, which is all of them. In the other direction, if every pair is covered exactly once, there must be $\binom{n}{2}/3 = n(n-1)/6$ triples.
+
+It is known (Kirkman, 1847) that a Steiner triple system of order $n$ exists if and only if $n \equiv 1$ or $3 \pmod 6$. The "only if" part is easy: the number of triples $n(n-1)/6$ has to be an integer, and every point $p$ is in $n-1$ pairs which are split into triples through $p$ two at a time, so $n-1$ has to be even. The script does **not** use this fact; the SAT solver has to find the answer on its own. This means we know the correct answer for every instance in advance, which is useful for testing.
+
+An example of the input format is a file containing just the order:
+
+```
+7
+```
+
+## Encoding
+
+For every triple $a < b < c$ of points we have a variable $x_{a,b,c}$, which is true if and only if the triple $\{a, b, c\}$ is in $B$. This gives $\binom{n}{3}$ variables. They are numbered from 1 in lexicographic order of the triples, i.e. $x_{1,2,3} = 1$, $x_{1,2,4} = 2$, and so on.
+
+For a pair $i < j$ let $T(i,j)$ be the set of the $n-2$ triples that contain both $i$ and $j$. We use the following constraints:
+
+- Every pair is covered by at least one chosen triple
+
+    $\bigvee_{t \in T(i,j)} x_t$ for each $i < j$
+
+- Every pair is covered by at most one chosen triple
+
+    $\neg x_s \vee \neg x_t$ for each $i < j$ and each two different triples $s, t \in T(i,j)$
+
+A satisfying assignment gives a Steiner triple system (take the triples whose variables are true), and a Steiner triple system gives a satisfying assignment (set exactly its triples to true), so the formula is satisfiable if and only if the answer is yes.
+
+The formula has $\binom{n}{3}$ variables and $\binom{n}{2}\left(1 + \binom{n-2}{2}\right)$ clauses, so the number of clauses grows like $n^4/8$. For example, $n = 67$ gives 47,905 variables and 4,601,091 clauses. Two special cases: for $n = 1$ there are no pairs, so the formula is empty and satisfiable (the empty set of triples works). For $n = 2$ the only pair $\{1,2\}$ has no triple containing it, so the "at least one" clause is the empty clause (a line with just `0` in DIMACS) and the formula is unsatisfiable.
