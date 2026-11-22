@@ -45,6 +45,38 @@ def decode(result, triples):
 
     return [triples[v - 1] for v in model if v > 0]
 
+def check_solution(n, chosen):
+    return sorted(p for t in chosen for p in combinations(t, 2)) == list(combinations(range(1, n + 1), 2))
+
+def print_result(n, result, chosen):
+    print()
+    print("##################################################################")
+    print("#########[ Human readable result: Steiner triple system ]#########")
+    print("##################################################################")
+    print()
+
+    if result.returncode == 20:
+        print("UNSAT: there is no Steiner triple system of order " + str(n) + ".")
+        return
+    if result.returncode != 10:
+        print("The solver did not give an answer (return code " + str(result.returncode) + ").")
+        return
+
+    print("SAT: a Steiner triple system of order " + str(n) + " exists.")
+    print("It has " + str(len(chosen)) + " triples:")
+    print()
+    width = len(str(n))
+    cells = ["{" + ", ".join(str(p).rjust(width) for p in triple) + "}" for triple in chosen]
+    if not cells:
+        print("  (no triples needed, there are no pairs to cover)")
+    for start in range(0, len(cells), 6):
+        print("  " + "  ".join(cells[start:start + 6]))
+    print()
+    if check_solution(n, chosen):
+        print("Check: every pair of points is in exactly one triple - OK")
+    else:
+        print("Check FAILED: the decoded triples are not a Steiner triple system!")
+
 if __name__ == "__main__":
 
     parser = ArgumentParser(description="Steiner triple systems (CSPLib prob044) solved with Glucose.")
@@ -60,8 +92,6 @@ if __name__ == "__main__":
                         help="Verbosity: 1 prints the solver's output and statistics.")
     args = parser.parse_args()
 
-    # get the input instance
-    #the instance file contains a single number: the order n (the number of points)
     n = args.order if args.order is not None else int(open(args.input).read().split()[0])
     if n < 1:
         sys.exit("The order n has to be a positive integer.")
@@ -73,10 +103,5 @@ if __name__ == "__main__":
     if args.verb == 1:
         print(result.stdout, end="")
 
-    if result.returncode == 10:
-        print("SAT")
-        print(decode(result, triples))
-    elif result.returncode == 20:
-        print("UNSAT")
-    else:
-        print("The solver did not give an answer (return code " + str(result.returncode) + ").")
+    chosen = decode(result, triples) if result.returncode == 10 else []
+    print_result(n, result, chosen)
