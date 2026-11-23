@@ -2,6 +2,7 @@ import subprocess
 import sys
 from argparse import ArgumentParser
 from itertools import combinations
+import time
 
 def create_triples(n):
     triples = list(combinations(range(1, n + 1), 3))
@@ -90,18 +91,32 @@ if __name__ == "__main__":
                         help="The SAT solver to be used.")
     parser.add_argument("-v", "--verb", default=0, type=int, choices=range(0, 2),
                         help="Verbosity: 1 prints the solver's output and statistics.")
+    parser.add_argument("-p", "--print-cnf", action="store_true",
+                        help="Print the CNF formula in DIMACS format.")
     args = parser.parse_args()
 
     n = args.order if args.order is not None else int(open(args.input).read().split()[0])
     if n < 1:
         sys.exit("The order n has to be a positive integer.")
 
+    start = time.perf_counter()
     cnf, nr_vars, triples = encode(n)
     write_dimacs(cnf, nr_vars, args.output)
+    encode_time = time.perf_counter() - start
 
+    if args.print_cnf:
+        with open(args.output, "r") as file:
+            print(file.read(), end="")
+
+    start = time.perf_counter()
     result = call_solver(args.output, args.solver, args.verb)
+    solve_time = time.perf_counter() - start
+
     if args.verb == 1:
         print(result.stdout, end="")
+        print("c order n = " + str(n))
+        print("c variables = " + str(nr_vars) + ", clauses = " + str(len(cnf)))
+        print("c encoding time = %.2f s, solver time = %.2f s" % (encode_time, solve_time))
 
     chosen = decode(result, triples) if result.returncode == 10 else []
     print_result(n, result, chosen)
