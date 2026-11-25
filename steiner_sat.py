@@ -14,7 +14,21 @@ def triples_with_pair(i, j, n, triple_to_id):
 def at_most_one_pairwise(ids):
     return [[-a, -b, 0] for a, b in combinations(ids, 2)]
 
-def encode(n):
+def at_most_one_sequential(ids, nr_vars):
+    k = len(ids)
+    if k <= 1:
+        return [], nr_vars
+    s = [nr_vars + 1 + i for i in range(k - 1)]
+
+    clauses = [[-ids[0], s[0], 0]]
+    for i in range(1, k - 1):
+        clauses.append([-ids[i], s[i], 0])
+        clauses.append([-s[i - 1], s[i], 0])
+        clauses.append([-ids[i], -s[i - 1], 0])
+    clauses.append([-ids[k - 1], -s[k - 2], 0])
+    return clauses, nr_vars + k - 1
+
+def encode(n, encoding):
     triples, triple_to_id = create_triples(n)
     nr_vars = len(triples)
     cnf = []
@@ -24,7 +38,11 @@ def encode(n):
 
         cnf.append(ids + [0])
 
-        cnf.extend(at_most_one_pairwise(ids))
+        if encoding == "pairwise":
+            cnf.extend(at_most_one_pairwise(ids))
+        else:
+            clauses, nr_vars = at_most_one_sequential(ids, nr_vars)
+            cnf.extend(clauses)
 
     return cnf, nr_vars, triples
 
@@ -44,7 +62,7 @@ def decode(result, triples):
         if line.startswith("v"):
             model.extend(int(v) for v in line.split()[1:])
 
-    return [triples[v - 1] for v in model if v > 0]
+    return [triples[v - 1] for v in model if 0 < v <= len(triples)]
 
 def check_solution(n, chosen):
     return sorted(p for t in chosen for p in combinations(t, 2)) == list(combinations(range(1, n + 1), 2))
@@ -91,6 +109,8 @@ if __name__ == "__main__":
                         help="The SAT solver to be used.")
     parser.add_argument("-v", "--verb", default=0, type=int, choices=range(0, 2),
                         help="Verbosity: 1 prints the solver's output and statistics.")
+    parser.add_argument("-e", "--encoding", default="pairwise", choices=["pairwise", "sequential"],
+                        help="Encoding of the 'at most one' constraints.")
     parser.add_argument("-p", "--print-cnf", action="store_true",
                         help="Print the CNF formula in DIMACS format.")
     args = parser.parse_args()
@@ -100,7 +120,7 @@ if __name__ == "__main__":
         sys.exit("The order n has to be a positive integer.")
 
     start = time.perf_counter()
-    cnf, nr_vars, triples = encode(n)
+    cnf, nr_vars, triples = encode(n, args.encoding)
     write_dimacs(cnf, nr_vars, args.output)
     encode_time = time.perf_counter() - start
 
@@ -114,7 +134,7 @@ if __name__ == "__main__":
 
     if args.verb == 1:
         print(result.stdout, end="")
-        print("c order n = " + str(n))
+        print("c order n = " + str(n) + ", encoding = " + args.encoding)
         print("c variables = " + str(nr_vars) + ", clauses = " + str(len(cnf)))
         print("c encoding time = %.2f s, solver time = %.2f s" % (encode_time, solve_time))
 
