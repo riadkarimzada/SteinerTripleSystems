@@ -50,6 +50,16 @@ A satisfying assignment gives a Steiner triple system (take the triples whose va
 
 The formula has $\binom{n}{3}$ variables and $\binom{n}{2}\left(1 + \binom{n-2}{2}\right)$ clauses, so the number of clauses grows like $n^4/8$. For example, $n = 67$ gives 47,905 variables and 4,601,091 clauses. Two special cases: for $n = 1$ there are no pairs, so the formula is empty and satisfiable (the empty set of triples works). For $n = 2$ the only pair $\{1,2\}$ has no triple containing it, so the "at least one" clause is the empty clause (a line with just `0` in DIMACS) and the formula is unsatisfiable.
 
+### Alternatives
+
+The script can also use a different encoding of the "at most one" constraints.
+
+- **Sequential counter** (`-e sequential`). The "at most one" constraint with pairwise clauses needs $\binom{k}{2}$ clauses for $k$ triples. The sequential counter ([Sinz, 2005](https://www.carstensinz.de/papers/CP-2005.pdf)) adds helper variables $s_1, \ldots, s_{k-1}$, where $s_m$ means "one of the first $m$ triples is chosen", and uses the clauses
+
+    $\neg x_1 \vee s_1$, $\quad \neg x_k \vee \neg s_{k-1}$, $\quad$ and for $1 < m < k$: $\neg x_m \vee s_m$, $\neg s_{m-1} \vee s_m$, $\neg x_m \vee \neg s_{m-1}$.
+
+    This is only $3k - 4$ clauses but $k - 1$ new variables per pair. For $n = 67$ we get 189,409 variables and 424,512 clauses, so the CNF file is about 10 times smaller.
+
 ## User documentation
 
 Basic usage:
