@@ -1,0 +1,25 @@
+n,encoding,symmetry,variables,clauses,result,encoding time (s),solver time (s)
+19,pairwise,False,969,23427,SAT,0.02,2.81
+19,pairwise,True,969,23436,SAT,0.02,0.19
+19,sequential,False,3705,8208,SAT,0.01,0.01
+19,sequential,True,3705,8217,SAT,0.01,0.01
+31,pairwise,False,4495,189255,SAT,0.2,3.95
+31,pairwise,True,4495,189270,SAT,0.14,2.89
+31,sequential,False,17515,39060,SAT,0.05,0.05
+31,sequential,True,17515,39075,SAT,0.04,0.04
+43,pairwise,False,12341,741363,SAT,0.55,0.76
+43,pairwise,True,12341,741384,SAT,0.57,0.62
+43,sequential,False,48461,108360,SAT,0.1,0.47
+43,sequential,True,48461,108381,SAT,0.15,0.28
+55,pairwise,False,26235,2047815,SAT,1.91,3.81
+55,pairwise,True,26235,2047842,SAT,1.88,9.08
+55,sequential,False,103455,231660,SAT,0.22,3.52
+55,sequential,True,103455,231687,SAT,0.19,19.05
+61,pairwise,False,35990,3132960,SAT,2.8,11.4
+61,pairwise,True,35990,3132990,SAT,2.99,27.05
+61,sequential,False,142130,318420,SAT,0.33,35.7
+61,sequential,True,142130,318450,SAT,0.29,22.61
+67,pairwise,False,47905,4601091,SAT,4.41,25.3
+67,pairwise,True,47905,4601124,SAT,4.5,44.67
+67,sequential,False,189409,424512,SAT,0.43,103.26
+67,sequential,True,189409,424545,SAT,0.4,9.68

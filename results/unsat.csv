@@ -1,0 +1,29 @@
+n,encoding,symmetry,variables,clauses,result,encoding time (s),solver time (s)
+4,pairwise,False,4,12,UNSAT,0.12,0.0
+4,pairwise,True,4,13,UNSAT,0.0,0.0
+5,pairwise,False,10,40,UNSAT,0.0,0.0
+5,pairwise,True,10,42,UNSAT,0.0,0.0
+6,pairwise,False,20,105,UNSAT,0.0,0.0
+6,pairwise,True,20,107,UNSAT,0.0,0.0
+8,pairwise,False,56,448,UNSAT,0.0,0.0
+8,pairwise,True,56,451,UNSAT,0.0,0.0
+10,pairwise,False,120,1305,UNSAT,0.0,0.01
+10,pairwise,True,120,1309,UNSAT,0.0,0.0
+11,pairwise,False,165,2035,UNSAT,0.0,100.77
+11,pairwise,True,165,2040,UNSAT,0.0,0.01
+12,pairwise,False,220,3036,UNSAT,0.0,0.02
+12,pairwise,True,220,3041,UNSAT,0.0,0.0
+14,pairwise,False,364,6097,UNSAT,0.01,1.7
+14,pairwise,True,364,6103,UNSAT,0.01,0.0
+16,pairwise,False,560,11040,UNSAT,0.01,19.9
+16,pairwise,True,560,11047,UNSAT,0.01,0.0
+17,pairwise,False,680,14416,TIMEOUT,0.01,> 120
+17,pairwise,True,680,14424,TIMEOUT,0.01,> 120
+18,pairwise,False,816,18513,TIMEOUT,0.01,> 120
+18,pairwise,True,816,18521,UNSAT,0.01,0.01
+20,pairwise,False,1140,29260,TIMEOUT,0.02,> 120
+20,pairwise,True,1140,29269,UNSAT,0.03,0.01
+22,pairwise,False,1540,44121,TIMEOUT,0.04,> 120
+22,pairwise,True,1540,44131,UNSAT,0.03,0.01
+23,pairwise,False,1771,53383,TIMEOUT,0.03,> 120
+23,pairwise,True,1771,53394,TIMEOUT,0.03,> 120

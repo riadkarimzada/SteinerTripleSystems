@@ -56,9 +56,9 @@ def write_dimacs(cnf, nr_vars, output_name):
         for clause in cnf:
             file.write(" ".join(str(lit) for lit in clause) + "\n")
 
-def call_solver(output_name, solver_name, verbosity):
+def call_solver(output_name, solver_name, verbosity, timeout=None):
     return subprocess.run([solver_name, "-model", "-verb=" + str(verbosity), output_name],
-                          stdout=subprocess.PIPE, text=True)
+                          stdout=subprocess.PIPE, text=True, timeout=timeout)
 
 def decode(result, triples):
     model = []
