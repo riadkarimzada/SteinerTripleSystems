@@ -52,7 +52,7 @@ The formula has $\binom{n}{3}$ variables and $\binom{n}{2}\left(1 + \binom{n-2}{
 
 ### Alternatives
 
-The script can also use a different encoding of the "at most one" constraints.
+The script can also use two other options.
 
 - **Sequential counter** (`-e sequential`). The "at most one" constraint with pairwise clauses needs $\binom{k}{2}$ clauses for $k$ triples. The sequential counter ([Sinz, 2005](https://www.carstensinz.de/papers/CP-2005.pdf)) adds helper variables $s_1, \ldots, s_{k-1}$, where $s_m$ means "one of the first $m$ triples is chosen", and uses the clauses
 
@@ -60,12 +60,16 @@ The script can also use a different encoding of the "at most one" constraints.
 
     This is only $3k - 4$ clauses but $k - 1$ new variables per pair. For $n = 67$ we get 189,409 variables and 424,512 clauses, so the CNF file is about 10 times smaller.
 
+- **Symmetry breaking** (`--symmetry`). If we rename the points of a Steiner triple system, we get another one. Point 1 lies in $(n-1)/2$ triples, and these split the points $2, \ldots, n$ into pairs. After renaming we can assume that these triples are $\{1,2,3\}, \{1,4,5\}, \{1,6,7\}, \ldots$, so we add them as unit clauses. This does not change whether the formula is satisfiable, but the solver has much less to search.
+
+- **CSPLib formulation.** We could also directly say "choose exactly $n(n-1)/6$ triples and no two chosen triples share two points". The second part gives the same clauses as our "at most one" constraint, and the first part needs a cardinality constraint (e.g. a counter over all $\binom{n}{3}$ variables), so it is bigger and more complicated. I did not implement it.
+
 ## User documentation
 
 Basic usage:
 
 ```
-steiner_sat.py [-h] [-i INPUT] [-n ORDER] [-o OUTPUT] [-s SOLVER] [-v {0,1}] [-p]
+steiner_sat.py [-h] [-i INPUT] [-n ORDER] [-o OUTPUT] [-s SOLVER] [-v {0,1}] [-e {pairwise,sequential}] [--symmetry] [-p]
 ```
 
 Command-line options:
@@ -76,6 +80,8 @@ Command-line options:
 * `-o OUTPUT`, `--output OUTPUT`: Output file for the DIMACS format (i.e. the CNF formula). Default: "formula.cnf".
 * `-s SOLVER`, `--solver SOLVER`: The SAT solver to be used. Default: "./glucose-simp".
 * `-v {0,1}`, `--verb {0,1}`: Verbosity. With `-v 1` the script prints the whole output of Glucose (including its statistics about the search) and then the size of the formula and the encoding and solving times. Default: 0.
+* `-e {pairwise,sequential}`, `--encoding {pairwise,sequential}`: The encoding of the "at most one" constraints. Default: "pairwise".
+* `--symmetry`: Add the symmetry breaking clauses.
 * `-p`, `--print-cnf`: Print the CNF formula in DIMACS format to the standard output.
 
 The input file contains one positive integer, the order $n$. For example:

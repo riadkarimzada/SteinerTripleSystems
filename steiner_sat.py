@@ -28,7 +28,7 @@ def at_most_one_sequential(ids, nr_vars):
     clauses.append([-ids[k - 1], -s[k - 2], 0])
     return clauses, nr_vars + k - 1
 
-def encode(n, encoding):
+def encode(n, encoding, symmetry):
     triples, triple_to_id = create_triples(n)
     nr_vars = len(triples)
     cnf = []
@@ -43,6 +43,10 @@ def encode(n, encoding):
         else:
             clauses, nr_vars = at_most_one_sequential(ids, nr_vars)
             cnf.extend(clauses)
+
+    if symmetry:
+        for a in range(2, n, 2):
+            cnf.append([triple_to_id[(1, a, a + 1)], 0])
 
     return cnf, nr_vars, triples
 
@@ -111,6 +115,8 @@ if __name__ == "__main__":
                         help="Verbosity: 1 prints the solver's output and statistics.")
     parser.add_argument("-e", "--encoding", default="pairwise", choices=["pairwise", "sequential"],
                         help="Encoding of the 'at most one' constraints.")
+    parser.add_argument("--symmetry", action="store_true",
+                        help="Add symmetry breaking (fix the triples containing point 1).")
     parser.add_argument("-p", "--print-cnf", action="store_true",
                         help="Print the CNF formula in DIMACS format.")
     args = parser.parse_args()
@@ -120,7 +126,7 @@ if __name__ == "__main__":
         sys.exit("The order n has to be a positive integer.")
 
     start = time.perf_counter()
-    cnf, nr_vars, triples = encode(n, args.encoding)
+    cnf, nr_vars, triples = encode(n, args.encoding, args.symmetry)
     write_dimacs(cnf, nr_vars, args.output)
     encode_time = time.perf_counter() - start
 
@@ -134,7 +140,7 @@ if __name__ == "__main__":
 
     if args.verb == 1:
         print(result.stdout, end="")
-        print("c order n = " + str(n) + ", encoding = " + args.encoding)
+        print("c order n = " + str(n) + ", encoding = " + args.encoding + ", symmetry breaking = " + str(args.symmetry))
         print("c variables = " + str(nr_vars) + ", clauses = " + str(len(cnf)))
         print("c encoding time = %.2f s, solver time = %.2f s" % (encode_time, solve_time))
 
