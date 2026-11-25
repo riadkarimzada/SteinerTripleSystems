@@ -49,3 +49,54 @@ For a pair $i < j$ let $T(i,j)$ be the set of the $n-2$ triples that contain bot
 A satisfying assignment gives a Steiner triple system (take the triples whose variables are true), and a Steiner triple system gives a satisfying assignment (set exactly its triples to true), so the formula is satisfiable if and only if the answer is yes.
 
 The formula has $\binom{n}{3}$ variables and $\binom{n}{2}\left(1 + \binom{n-2}{2}\right)$ clauses, so the number of clauses grows like $n^4/8$. For example, $n = 67$ gives 47,905 variables and 4,601,091 clauses. Two special cases: for $n = 1$ there are no pairs, so the formula is empty and satisfiable (the empty set of triples works). For $n = 2$ the only pair $\{1,2\}$ has no triple containing it, so the "at least one" clause is the empty clause (a line with just `0` in DIMACS) and the formula is unsatisfiable.
+
+## User documentation
+
+Basic usage:
+
+```
+steiner_sat.py [-h] [-i INPUT] [-n ORDER] [-o OUTPUT] [-s SOLVER] [-v {0,1}] [-p]
+```
+
+Command-line options:
+
+* `-h`, `--help`: Show a help message and exit.
+* `-i INPUT`, `--input INPUT`: The instance file. Default: "input.in".
+* `-n ORDER`, `--order ORDER`: The order $n$ given directly on the command line (then no input file is read).
+* `-o OUTPUT`, `--output OUTPUT`: Output file for the DIMACS format (i.e. the CNF formula). Default: "formula.cnf".
+* `-s SOLVER`, `--solver SOLVER`: The SAT solver to be used. Default: "./glucose-simp".
+* `-v {0,1}`, `--verb {0,1}`: Verbosity. With `-v 1` the script prints the whole output of Glucose (including its statistics about the search) and then the size of the formula and the encoding and solving times. Default: 0.
+* `-p`, `--print-cnf`: Print the CNF formula in DIMACS format to the standard output.
+
+The input file contains one positive integer, the order $n$. For example:
+
+```
+python3 steiner_sat.py -i instances/sts-7.in
+python3 steiner_sat.py -n 9 -v 1
+python3 steiner_sat.py -i instances/sts-6.in -p
+```
+
+The output for `instances/sts-7.in` looks like this:
+
+```
+##################################################################
+#########[ Human readable result: Steiner triple system ]#########
+##################################################################
+
+SAT: a Steiner triple system of order 7 exists.
+It has 7 triples:
+
+  {1, 2, 4}  {1, 3, 6}  {1, 5, 7}  {2, 3, 5}  {2, 6, 7}  {3, 4, 7}
+  {4, 5, 6}
+
+Check: every pair of points is in exactly one triple - OK
+```
+
+Each `{a, b, c}` is one triple of the system. The last line is a check done in Python directly on the decoded triples. It takes the three pairs inside every triple, sorts them and compares the result with the list of all pairs, so every pair has to be there exactly once. This check does not depend on the encoding being correct. If there is no solution, the script prints `UNSAT: there is no Steiner triple system of order n.`
+
+## Example instances
+
+* `sts-1.in`, `sts-2.in`: The two special cases from above (empty formula, SAT; empty clause, UNSAT).
+* `sts-6.in`: A small unsatisfiable instance (20 variables, 105 clauses). It is easy to see why by hand: point 1 is in 5 pairs, every triple containing point 1 covers exactly 2 of them, and 5 is odd.
+* `sts-7.in`: A small satisfiable instance (35 variables, 231 clauses). The solution is the Fano plane with 7 triples, and it is easy to check by hand that all 21 pairs are covered exactly once (see the output above).
+* `sts-9.in`: A small satisfiable instance with $n \equiv 3 \pmod 6$ (12 triples).
